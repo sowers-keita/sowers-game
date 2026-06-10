@@ -195,6 +195,23 @@ font-weight: 800;
 color: #5a3218;
 }
 
+.journey-banner {
+width: 100%;
+margin-top: 12px;
+padding: 10px;
+border: 3px solid #2b1b10;
+border-radius: 14px;
+background: #ffd447;
+color: #2b1b10;
+font-size: 15px;
+font-weight: 900;
+box-shadow: 0 4px 0 #2b1b10;
+cursor: pointer;
+animation: blink 1.2s infinite;
+}
+.journey-banner:active { transform: translateY(3px); box-shadow: 0 1px 0 #2b1b10; }
+@keyframes blink { 0%,100% { background:#ffd447; } 50% { background:#ffe88a; } }
+
 .section {
 margin-top: 14px;
 background: white;
@@ -365,6 +382,7 @@ display: none;
 <div class="name">モンキー</div>
 <div class="stage">ビギナー期</div>
 <div class="message">今日もトレーニングしたいみたい！</div>
+<button class="journey-banner" onclick="location.href='journey.html'">！ 旅立ちの時が来た… ＞</button>
 </div>
 
 <div class="section">

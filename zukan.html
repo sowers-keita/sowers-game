@@ -56,8 +56,11 @@ content: ""; position: absolute; top: 15px; width: 5px; height: 5px; background:
 }
 .mon::before { left: 12px; }
 .mon::after { right: 12px; }
-.card.locked .mon { background: #2b1b10 !important; }
-.card.locked .mon::before, .card.locked .mon::after { background: #6b6b6b; }
+.hidden-mon {
+width: 46px; height: 46px; border-radius: 50%; border: 3px dashed #b3a89a; margin: 4px auto;
+background: #e2dccf; color: #a89e8c; display: flex; align-items: center; justify-content: center;
+font-size: 24px; font-weight: 900;
+}
 .name { font-size: 12px; font-weight: 900; color: #2b1b10; line-height: 1.2; min-height: 28px; display: flex; align-items: center; justify-content: center; }
 .card.locked .name { color: #999; }
 
@@ -174,8 +177,8 @@ MONSTERS.filter(m => filter==="all" || (filter==="found" && m.found) || (filter=
 const card = document.createElement("div");
 card.className = "card" + (m.found ? "" : " locked");
 card.innerHTML = `
-<div class="no">No.${String(m.no).padStart(2,"0")}</div>
-<div class="mon" style="background:${m.found ? m.color : "#2b1b10"}"></div>
+<div class="no">${m.found ? "No."+String(m.no).padStart(2,"0") : "No.??"}</div>
+${m.found ? `<div class="mon" style="background:${m.color}"></div>` : `<div class="hidden-mon">？</div>`}
 <div class="name">${m.found ? m.name : "？？？"}</div>
 `;
 if (m.found) card.addEventListener("click", () => showDetail(m));
