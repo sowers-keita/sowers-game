@@ -373,33 +373,33 @@ display: none;
 <div class="status-row">
 <div class="status-label">
 <span>パワー</span>
-<span>35 / 50</span>
+<span id="lbl-power">35 / 50</span>
 </div>
-<div class="bar"><div class="fill" style="width:70%;"></div></div>
+<div class="bar"><div class="fill" id="fill-power" style="width:70%;"></div></div>
 </div>
 
 <div class="status-row">
 <div class="status-label">
 <span>スタミナ</span>
-<span>40 / 55</span>
+<span id="lbl-stamina">40 / 55</span>
 </div>
-<div class="bar"><div class="fill" style="width:72%;"></div></div>
+<div class="bar"><div class="fill" id="fill-stamina" style="width:72%;"></div></div>
 </div>
 
 <div class="status-row">
 <div class="status-label">
 <span>スピード</span>
-<span>28 / 45</span>
+<span id="lbl-speed">28 / 45</span>
 </div>
-<div class="bar"><div class="fill" style="width:62%;"></div></div>
+<div class="bar"><div class="fill" id="fill-speed" style="width:62%;"></div></div>
 </div>
 
 <div class="status-row">
 <div class="status-label">
 <span>テクニック</span>
-<span>31 / 50</span>
+<span id="lbl-technique">31 / 50</span>
 </div>
-<div class="bar"><div class="fill" style="width:62%;"></div></div>
+<div class="bar"><div class="fill" id="fill-technique" style="width:62%;"></div></div>
 </div>
 </div>
 
@@ -423,7 +423,7 @@ display: none;
 
 <div class="main-buttons">
 <button class="main-button" onclick="location.href='training.html'">トレーニング</button>
-<button class="main-button blue" onclick="alert('持ち物画面は現在開発中です')">持ち物</button>
+<button class="main-button blue" onclick="location.href='inventory.html'">持ち物</button>
 <button class="main-button green" onclick="alert('バトル画面は現在開発中です')">バトル</button>
 <button class="main-button pink" onclick="alert('図鑑は現在開発中です')">図鑑</button>
 </div>
@@ -439,6 +439,15 @@ display: none;
 </div>
 
 <script>
+// 持ち物で種を使うと上限が上がる。ホームのステータスに反映。
+const CUR = { power:35, stamina:40, speed:28, technique:31 };
+const caps = JSON.parse(localStorage.getItem("sm_caps") || "null") || { power:50, stamina:55, speed:45, technique:50 };
+Object.keys(CUR).forEach(k => {
+const cur = Math.min(CUR[k], caps[k]);
+document.getElementById("lbl-" + k).textContent = cur + " / " + caps[k];
+document.getElementById("fill-" + k).style.width = Math.round((cur / caps[k]) * 100) + "%";
+});
+
 const canEvolve = true;
 const evolveButton = document.getElementById("evolveButton");
 

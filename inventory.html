@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>持ち物</title>
+<style>
+* { box-sizing: border-box; }
+body {
+margin: 0; min-height: 100vh; font-family: system-ui, sans-serif;
+background: radial-gradient(circle at top, #fff4c7 0%, #ffd88a 45%, #ff9f5a 100%);
+display: flex; justify-content: center; align-items: flex-start; padding: 14px;
+}
+.app {
+width: 100%; max-width: 390px; min-height: 92vh; background: #fffaf0;
+border: 5px solid #2b1b10; border-radius: 30px; box-shadow: 0 9px 0 #2b1b10;
+overflow: hidden; display: flex; flex-direction: column;
+}
+.header {
+background: #2f8ee5; color: white; border-bottom: 5px solid #2b1b10; padding: 14px;
+display: flex; justify-content: space-between; align-items: center; font-weight: 900;
+}
+.header-title { font-size: 20px; }
+.back {
+background: white; color: #2b1b10; border: 3px solid #2b1b10; border-radius: 999px;
+padding: 6px 12px; font-size: 13px; font-weight: 900; cursor: pointer;
+}
+.content { flex: 1; padding: 14px; overflow-y: auto; }
+.lead { font-size: 14px; font-weight: 800; color: #5a3218; text-align: center; margin-bottom: 14px; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.card {
+background: white; border: 4px solid #2b1b10; border-radius: 20px; padding: 12px;
+box-shadow: 0 5px 0 #2b1b10; text-align: center;
+}
+.seed-img { width: 64px; height: 64px; margin: 0 auto 6px; display: block; }
+.seed-name { font-size: 15px; font-weight: 900; color: #2b1b10; }
+.seed-effect { font-size: 11px; font-weight: 700; color: #5a3218; margin: 2px 0 6px; min-height: 28px; }
+.seed-count { font-size: 13px; font-weight: 900; color: #2b1b10; margin-bottom: 8px; }
+.use-btn {
+width: 100%; padding: 9px; border: 3px solid #2b1b10; border-radius: 12px;
+background: #ffd447; color: #2b1b10; font-size: 15px; font-weight: 900; cursor: pointer;
+box-shadow: 0 4px 0 #2b1b10;
+}
+.use-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #2b1b10; }
+.use-btn:disabled { background: #ddd; color: #999; box-shadow: 0 4px 0 #999; border-color: #999; }
+.to-training {
+display: block; width: 100%; margin-top: 16px; padding: 14px; text-align: center;
+border: 4px solid #2b1b10; border-radius: 18px; background: #ff8a3d; color: white;
+font-size: 17px; font-weight: 900; box-shadow: 0 5px 0 #2b1b10; cursor: pointer; text-decoration: none;
+}
+
+/* 種を使う画面（オーバーレイ） */
+.overlay {
+position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+display: none; justify-content: center; align-items: center; padding: 20px; z-index: 50;
+}
+.overlay.show { display: flex; }
+.use-screen {
+width: 100%; max-width: 320px; background: #fffaf0; border: 5px solid #2b1b10;
+border-radius: 26px; box-shadow: 0 8px 0 #2b1b10; padding: 22px; text-align: center;
+}
+.use-screen .seed-img { width: 96px; height: 96px; animation: pop 0.5s ease; }
+@keyframes pop { from { transform: scale(0.4); } to { transform: scale(1); } }
+.use-title { font-size: 20px; font-weight: 900; color: #2b1b10; margin: 8px 0; }
+.use-msg { font-size: 15px; font-weight: 800; color: #1a9d35; margin: 10px 0 4px; }
+.use-detail { font-size: 13px; font-weight: 700; color: #5a3218; }
+.close-btn {
+width: 100%; margin-top: 18px; padding: 12px; border: 3px solid #2b1b10; border-radius: 14px;
+background: #ff7a00; color: white; font-size: 16px; font-weight: 900; cursor: pointer;
+box-shadow: 0 4px 0 #2b1b10;
+}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="header">
+<div class="header-title">持ち物（種）</div>
+<button class="back" onclick="location.href='index.html'">← ホーム</button>
+</div>
+<div class="content">
+<div class="lead">種を使うと能力の「上限」が上がるよ！<br>上限までのばすにはトレーニング！</div>
+<div class="grid" id="grid"></div>
+<a class="to-training" href="training.html">トレーニングへ →</a>
+</div>
+</div>
+
+<div class="overlay" id="overlay">
+<div class="use-screen">
+<div id="useImg"></div>
+<div class="use-title" id="useTitle"></div>
+<div class="use-msg" id="useMsg"></div>
+<div class="use-detail" id="useDetail"></div>
+<button class="close-btn" onclick="closeOverlay()">とじる</button>
+</div>
+</div>
+
+<script>
+// 種のイラスト（シンプルなSVGアイコン。ChatGPTの正式イラストに差し替え可能）
+function seedSVG(bodyColor, accent, mark) {
+return `<svg class="seed-img" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+<ellipse cx="32" cy="38" rx="20" ry="22" fill="${bodyColor}" stroke="#2b1b10" stroke-width="3"/>
+<path d="M32 18 C30 8 38 6 40 12 C46 8 48 16 40 18 Z" fill="#5fbd4a" stroke="#2b1b10" stroke-width="3"/>
+<ellipse cx="25" cy="34" rx="5" ry="7" fill="#ffffff" opacity="0.5"/>
+<text x="32" y="46" font-size="20" text-anchor="middle" font-weight="bold" fill="${accent}">${mark}</text>
+</svg>`;
+}
+function rainbowSVG() {
+return `<svg class="seed-img" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+<defs><linearGradient id="rb" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#ff5a5a"/><stop offset="0.25" stop-color="#ffb443"/>
+<stop offset="0.5" stop-color="#ffe24a"/><stop offset="0.7" stop-color="#5fbd4a"/>
+<stop offset="0.85" stop-color="#2f8ee5"/><stop offset="1" stop-color="#a05fe5"/>
+</linearGradient></defs>
+<ellipse cx="32" cy="38" rx="20" ry="22" fill="url(#rb)" stroke="#2b1b10" stroke-width="3"/>
+<path d="M32 18 C30 8 38 6 40 12 C46 8 48 16 40 18 Z" fill="#5fbd4a" stroke="#2b1b10" stroke-width="3"/>
+<text x="32" y="46" font-size="20" text-anchor="middle" font-weight="bold" fill="#fff">★</text>
+</svg>`;
+}
+
+const SEEDS = [
+{ key:"power",     name:"パワーの種",     effect:"パワーの上限 +2",       svg:seedSVG("#ff6b5a","#7a1e10","力") },
+{ key:"stamina",   name:"スタミナの種",   effect:"スタミナの上限 +2",     svg:seedSVG("#5fbd4a","#1c4a14","体") },
+{ key:"speed",     name:"スピードの種",   effect:"スピードの上限 +2",     svg:seedSVG("#2f8ee5","#0d3a63","速") },
+{ key:"technique", name:"テクニックの種", effect:"テクニックの上限 +2",   svg:seedSVG("#a05fe5","#3d1c63","技") },
+{ key:"allround",  name:"万能の種",       effect:"全部の上限 +1",         svg:seedSVG("#ffd447","#7a5a10","全") },
+{ key:"rainbow",   name:"虹の種",         effect:"全部の上限 +2（レア）", svg:rainbowSVG() },
+];
+
+const STAT_LABEL = { power:"パワー", stamina:"スタミナ", speed:"スピード", technique:"テクニック" };
+
+// 状態（localStorageで共有）
+function loadState() {
+let caps = JSON.parse(localStorage.getItem("sm_caps") || "null");
+let counts = JSON.parse(localStorage.getItem("sm_seeds") || "null");
+if (!caps) caps = { power:50, stamina:55, speed:45, technique:50 };
+if (!counts) counts = { power:3, stamina:3, speed:3, technique:3, allround:2, rainbow:1 };
+return { caps, counts };
+}
+function saveState(s) {
+localStorage.setItem("sm_caps", JSON.stringify(s.caps));
+localStorage.setItem("sm_seeds", JSON.stringify(s.counts));
+}
+let state = loadState();
+
+function render() {
+const grid = document.getElementById("grid");
+grid.innerHTML = "";
+SEEDS.forEach(seed => {
+const count = state.counts[seed.key];
+const div = document.createElement("div");
+div.className = "card";
+div.innerHTML = `
+${seed.svg}
+<div class="seed-name">${seed.name}</div>
+<div class="seed-effect">${seed.effect}</div>
+<div class="seed-count">のこり ${count} 個</div>
+<button class="use-btn" ${count<=0?"disabled":""}>使う</button>
+`;
+const btn = div.querySelector(".use-btn");
+btn.addEventListener("click", () => useSeed(seed));
+grid.appendChild(div);
+});
+}
+
+function useSeed(seed) {
+if (state.counts[seed.key] <= 0) return;
+state.counts[seed.key]--;
+let detail = "";
+if (seed.key === "allround") {
+["power","stamina","speed","technique"].forEach(k => state.caps[k] += 1);
+detail = "パワー・スタミナ・スピード・テクニックの上限が +1！";
+} else if (seed.key === "rainbow") {
+["power","stamina","speed","technique"].forEach(k => state.caps[k] += 2);
+detail = "全ステータスの上限が +2！すごい！";
+} else {
+state.caps[seed.key] += 2;
+detail = STAT_LABEL[seed.key] + "の上限が " + (state.caps[seed.key]-2) + " → " + state.caps[seed.key] + " に！";
+}
+saveState(state);
+showOverlay(seed, detail);
+render();
+}
+
+function showOverlay(seed, detail) {
+document.getElementById("useImg").innerHTML = seed.svg;
+document.getElementById("useTitle").textContent = seed.name + " を使った！";
+document.getElementById("useMsg").textContent = "上限アップ！";
+document.getElementById("useDetail").textContent = detail + " トレーニングで上限まで伸ばそう！";
+document.getElementById("overlay").classList.add("show");
+}
+function closeOverlay() {
+document.getElementById("overlay").classList.remove("show");
+}
+
+render();
+</script>
+</body>
+</html>
