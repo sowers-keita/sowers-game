@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>バトル</title>
+<style>
+* { box-sizing: border-box; }
+
+body {
+margin: 0;
+min-height: 100vh;
+font-family: system-ui, sans-serif;
+background: radial-gradient(circle at top, #ffe8d6 0%, #ffb56b 45%, #ff6b35 100%);
+display: flex;
+justify-content: center;
+align-items: center;
+padding: 14px;
+overflow: hidden;
+}
+
+.app {
+width: 100%;
+max-width: 390px;
+min-height: 92vh;
+background: #fffaf0;
+border: 5px solid #2b1b10;
+border-radius: 30px;
+box-shadow: 0 9px 0 #2b1b10;
+padding: 16px;
+display: flex;
+flex-direction: column;
+justify-content: space-between;
+position: relative;
+overflow: hidden;
+text-align: center;
+}
+
+.title {
+background: #ff4b35;
+color: white;
+border: 4px solid #2b1b10;
+border-radius: 20px;
+padding: 10px;
+font-size: 26px;
+font-weight: 900;
+box-shadow: 0 5px 0 #2b1b10;
+}
+
+.match-box {
+margin-top: 12px;
+background: white;
+border: 4px solid #2b1b10;
+border-radius: 20px;
+padding: 10px;
+box-shadow: 0 5px 0 #2b1b10;
+font-weight: 900;
+color: #2b1b10;
+line-height: 1.5;
+}
+
+.battle-field {
+height: 330px;
+margin-top: 14px;
+background: linear-gradient(#ffe7c7 0%, #fff8e8 58%, #d89b52 58%, #b56b2c 100%);
+border: 4px solid #2b1b10;
+border-radius: 28px;
+position: relative;
+overflow: hidden;
+box-shadow: inset 0 -8px 0 rgba(0,0,0,0.12);
+}
+
+.monster {
+position: absolute;
+width: 105px;
+height: 105px;
+bottom: 74px;
+transition: transform 0.25s ease;
+}
+
+.player {
+left: 30px;
+}
+
+.enemy {
+right: 30px;
+transform: scaleX(-1);
+}
+
+.attack-left {
+transform: translateX(42px);
+}
+
+.attack-right {
+transform: scaleX(-1) translateX(42px);
+}
+
+.damage {
+animation: damage 0.25s;
+}
+
+@keyframes damage {
+0% { filter: brightness(1); }
+50% { filter: brightness(3); }
+100% { filter: brightness(1); }
+}
+
+.head {
+position: absolute;
+top: 8px;
+left: 26px;
+width: 54px;
+height: 48px;
+background: #e94b35;
+border: 5px solid #2b1b10;
+border-radius: 50% 50% 44% 44%;
+}
+
+.ear-left,
+.ear-right {
+position: absolute;
+top: 3px;
+width: 24px;
+height: 24px;
+background: #e94b35;
+border: 5px solid #2b1b10;
+border-radius: 50%;
+}
+
+.ear-left { left: 16px; }
+.ear-right { right: 16px; }
+
+.body {
+position: absolute;
+top: 58px;
+left: 34px;
+width: 42px;
+height: 40px;
+background: #ff8a3d;
+border: 5px solid #2b1b10;
+border-radius: 18px;
+}
+
+.eye {
+position: absolute;
+top: 20px;
+width: 7px;
+height: 7px;
+background: #2b1b10;
+border-radius: 50%;
+}
+
+.eye.left { left: 17px; }
+.eye.right { right: 17px; }
+
+.enemy .head,
+.enemy .ear-left,
+.enemy .ear-right {
+background: #2f8ee5;
+}
+
+.enemy .body {
+background: #7bd0ff;
+}
+
+.hp-area {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 8px;
+margin-top: 12px;
+}
+
+.hp-box {
+background: white;
+border: 4px solid #2b1b10;
+border-radius: 18px;
+padding: 8px;
+box-shadow: 0 4px 0 #2b1b10;
+text-align: left;
+}
+
+.hp-name {
+font-size: 14px;
+font-weight: 900;
+color: #2b1b10;
+margin-bottom: 4px;
+}
+
+.hp-bar {
+height: 18px;
+border: 3px solid #2b1b10;
+border-radius: 999px;
+overflow: hidden;
+background: #eee;
+}
+
+.hp-fill {
+height: 100%;
+width: 100%;
+background: #34b85a;
+transition: width 0.3s ease;
+}
+
+.log {
+margin-top: 12px;
+background: white;
+border: 4px solid #2b1b10;
+border-radius: 20px;
+padding: 10px;
+min-height: 78px;
+font-size: 18px;
+font-weight: 900;
+color: #2b1b10;
+box-shadow: 0 5px 0 #2b1b10;
+display: flex;
+justify-content: center;
+align-items: center;
+line-height: 1.4;
+}
+
+.result-box {
+display: none;
+margin-top: 12px;
+background: #fff1cf;
+border: 4px solid #2b1b10;
+border-radius: 22px;
+padding: 14px;
+box-shadow: 0 5px 0 #2b1b10;
+}
+
+.result-title {
+font-size: 30px;
+font-weight: 900;
+color: #ff4b35;
+}
+
+.point {
+margin-top: 8px;
+font-size: 22px;
+font-weight: 900;
+color: #2b1b10;
+}
+
+button {
+width: 100%;
+height: 68px;
+border: 5px solid #2b1b10;
+border-radius: 24px;
+background: #ff4b35;
+color: white;
+font-size: 24px;
+font-weight: 900;
+box-shadow: 0 7px 0 #2b1b10;
+margin-top: 12px;
+}
+
+.home {
+display: none;
+background: #34b85a;
+}
+
+button:active {
+transform: translateY(4px);
+box-shadow: 0 3px 0 #2b1b10;
+}
+
+.burst {
+position: absolute;
+left: 50%;
+top: 48%;
+width: 20px;
+height: 20px;
+pointer-events: none;
+transform: translate(-50%, -50%);
+z-index: 10;
+}
+
+.spark {
+position: absolute;
+width: 13px;
+height: 13px;
+background: #fff36a;
+border: 3px solid #ff8c00;
+border-radius: 50%;
+animation: spark 0.65s ease-out forwards;
+}
+
+@keyframes spark {
+from {
+opacity: 1;
+transform: translate(0, 0) scale(1);
+}
+to {
+opacity: 0;
+transform: translate(var(--x), var(--y)) scale(2.2);
+}
+}
+</style>
+</head>
+<body>
+
+<div class="app" id="app">
+<div>
+<div class="title">モンスターバトル</div>
+
+<div class="match-box" id="matchBox">
+対戦相手を探しています…
+</div>
+
+<div class="hp-area">
+<div class="hp-box">
+<div class="hp-name">モンキー</div>
+<div class="hp-bar">
+<div class="hp-fill" id="playerHp"></div>
+</div>
+</div>
+
+<div class="hp-box">
+<div class="hp-name" id="enemyNameBox">？？？</div>
+<div class="hp-bar">
+<div class="hp-fill" id="enemyHp"></div>
+</div>
+</div>
+</div>
+
+<div class="battle-field">
+<div class="monster player" id="playerMonster">
+<div class="ear-left"></div>
+<div class="ear-right"></div>
+<div class="head">
+<div class="eye left"></div>
+<div class="eye right"></div>
+</div>
+<div class="body"></div>
+</div>
+
+<div class="monster enemy" id="enemyMonster">
+<div class="ear-left"></div>
+<div class="ear-right"></div>
+<div class="head">
+<div class="eye left"></div>
+<div class="eye right"></div>
+</div>
+<div class="body"></div>
+</div>
+</div>
+
+<div class="log" id="log">
+バトル準備中…
+</div>
+
+<div class="result-box" id="resultBox">
+<div class="result-title" id="resultTitle">勝利！</div>
+<div class="point" id="pointText">戦闘力 +10</div>
+</div>
+</div>
+
+<div>
+<button id="startButton">バトル開始！</button>
+<button class="home" id="homeButton" onclick="location.href='index.html'">ホームへ戻る</button>
+</div>
+</div>
+
+<script>
+const opponents = [
+{ name: "タロウ", classroom: "徳島体操", monster: "ワンダー", hp: 80, power: 24, speed: 15, technique: 12 },
+{ name: "ハナ", classroom: "北島教室", monster: "ピヨン", hp: 70, power: 20, speed: 24, technique: 18 },
+{ name: "ソウタ", classroom: "Sowers Club", monster: "シャドウハウンド", hp: 90, power: 22, speed: 18, technique: 25 },
+{ name: "ミオ", classroom: "阿南教室", monster: "バードン", hp: 75, power: 26, speed: 22, technique: 20 }
+];
+
+const player = {
+name: "モンキー",
+hp: 100,
+maxHp: 100,
+power: 28,
+speed: 18,
+technique: 16
+};
+
+let enemy = null;
+let playerHp = player.hp;
+let enemyHp = 0;
+let battleStarted = false;
+let turn = "player";
+
+const app = document.getElementById("app");
+const matchBox = document.getElementById("matchBox");
+const log = document.getElementById("log");
+const playerHpBar = document.getElementById("playerHp");
+const enemyHpBar = document.getElementById("enemyHp");
+const enemyNameBox = document.getElementById("enemyNameBox");
+const startButton = document.getElementById("startButton");
+const homeButton = document.getElementById("homeButton");
+const resultBox = document.getElementById("resultBox");
+const resultTitle = document.getElementById("resultTitle");
+const pointText = document.getElementById("pointText");
+const playerMonster = document.getElementById("playerMonster");
+const enemyMonster = document.getElementById("enemyMonster");
+
+function wait(ms) {
+return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function pickOpponent() {
+enemy = opponents[Math.floor(Math.random() * opponents.length)];
+enemyHp = enemy.hp;
+
+matchBox.textContent = `${enemy.classroom}の ${enemy.name}くん とマッチング！`;
+enemyNameBox.textContent = enemy.monster;
+
+updateHp();
+log.textContent = `${enemy.monster} が現れた！`;
+}
+
+function updateHp() {
+playerHpBar.style.width = `${Math.max(0, (playerHp / player.maxHp) * 100)}%`;
+enemyHpBar.style.width = `${Math.max(0, (enemyHp / enemy.hp) * 100)}%`;
+}
+
+function createBurst() {
+const burst = document.createElement("div");
+burst.className = "burst";
+
+const points = [
+[0, -90], [70, -70], [95, 0], [70, 70],
+[0, 90], [-70, 70], [-95, 0], [-70, -70]
+];
+
+points.forEach(([x, y]) => {
+const spark = document.createElement("div");
+spark.className = "spark";
+spark.style.setProperty("--x", x + "px");
+spark.style.setProperty("--y", y + "px");
+burst.appendChild(spark);
+});
+
+app.appendChild(burst);
+setTimeout(() => burst.remove(), 700);
+}
+
+function calcDamage(attacker, defender) {
+const avoidRate = Math.min(35, defender.speed * 0.8);
+const criticalRate = Math.min(35, attacker.technique * 0.8);
+
+if (Math.random() * 100 < avoidRate) {
+return { damage: 0, text: "よけた！" };
+}
+
+let damage = Math.floor(attacker.power * (0.75 + Math.random() * 0.4));
+let critical = false;
+
+if (Math.random() * 100 < criticalRate) {
+damage = Math.floor(damage * 1.5);
+critical = true;
+}
+
+return {
+damage,
+text: critical ? `クリティカル！ ${damage}ダメージ！` : `${damage}ダメージ！`
+};
+}
+
+async function playerAttack() {
+playerMonster.classList.add("attack-left");
+await wait(250);
+playerMonster.classList.remove("attack-left");
+
+const result = calcDamage(player, enemy);
+enemyHp -= result.damage;
+
+enemyMonster.classList.add("damage");
+createBurst();
+await wait(250);
+enemyMonster.classList.remove("damage");
+
+log.textContent = `モンキーの攻撃！ ${result.text}`;
+updateHp();
+}
+
+async function enemyAttack() {
+enemyMonster.classList.add("attack-right");
+await wait(250);
+enemyMonster.classList.remove("attack-right");
+
+const result = calcDamage(enemy, player);
+playerHp -= result.damage;
+
+playerMonster.classList.add("damage");
+createBurst();
+await wait(250);
+playerMonster.classList.remove("damage");
+
+log.textContent = `${enemy.monster}の攻撃！ ${result.text}`;
+updateHp();
+}
+
+async function battleLoop() {
+startButton.style.display = "none";
+
+while (playerHp > 0 && enemyHp > 0) {
+await playerAttack();
+await wait(900);
+
+if (enemyHp <= 0) break;
+
+await enemyAttack();
+await wait(900);
+}
+
+finishBattle();
+}
+
+function finishBattle() {
+resultBox.style.display = "block";
+homeButton.style.display = "block";
+
+if (playerHp > 0) {
+resultTitle.textContent = "勝利！";
+pointText.textContent = "戦闘力 +10";
+log.textContent = "バトルに勝利した！";
+} else {
+resultTitle.textContent = "敗北";
+pointText.textContent = "戦闘力 +5";
+log.textContent = "負けても経験になった！";
+}
+}
+
+startButton.addEventListener("click", () => {
+if (battleStarted) return;
+battleStarted = true;
+log.textContent = "バトル開始！";
+battleLoop();
+});
+
+pickOpponent();
+</script>
+
+</body>
+</html>

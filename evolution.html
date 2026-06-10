@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>進化アニメーション</title>
+<style>
+* { box-sizing: border-box; }
+
+body {
+margin: 0;
+min-height: 100vh;
+font-family: system-ui, sans-serif;
+background: radial-gradient(circle at top, #fff4c7 0%, #ffd88a 45%, #ff9f5a 100%);
+display: flex;
+justify-content: center;
+align-items: center;
+padding: 14px;
+overflow: hidden;
+}
+
+.app {
+width: 100%;
+max-width: 390px;
+min-height: 92vh;
+background: #fffaf0;
+border: 5px solid #2b1b10;
+border-radius: 30px;
+box-shadow: 0 9px 0 #2b1b10;
+padding: 18px;
+text-align: center;
+position: relative;
+overflow: hidden;
+display: flex;
+flex-direction: column;
+justify-content: space-between;
+}
+
+.title {
+background: #ff7a00;
+color: white;
+border: 4px solid #2b1b10;
+border-radius: 20px;
+padding: 10px;
+font-size: 24px;
+font-weight: 900;
+box-shadow: 0 5px 0 #2b1b10;
+z-index: 5;
+}
+
+.stage {
+height: 420px;
+background: linear-gradient(#e6f8ff 0%, #f8fff1 62%, #9bdc75 62%, #5fbd4a 100%);
+border: 4px solid #2b1b10;
+border-radius: 28px;
+position: relative;
+overflow: hidden;
+margin-top: 14px;
+}
+
+.monster-name {
+margin-top: 12px;
+font-size: 24px;
+font-weight: 900;
+color: #2b1b10;
+}
+
+.phase {
+display: inline-block;
+margin-top: 6px;
+padding: 6px 14px;
+background: #ff7a00;
+color: white;
+border: 3px solid #2b1b10;
+border-radius: 999px;
+font-weight: 900;
+}
+
+.monster {
+position: absolute;
+left: 50%;
+bottom: 110px;
+width: 130px;
+height: 130px;
+transform: translateX(-50%);
+transition: 0.4s;
+z-index: 4;
+}
+
+.monster.shake {
+animation: shake 0.12s infinite;
+}
+
+.monster.silhouette {
+filter: brightness(0);
+}
+
+.monster.grow {
+transform: translateX(-50%) scale(1.55);
+}
+
+.monster.flash {
+filter: brightness(4);
+}
+
+@keyframes shake {
+0% { transform: translateX(-50%) rotate(-3deg); }
+50% { transform: translateX(-50%) rotate(3deg); }
+100% { transform: translateX(-50%) rotate(-3deg); }
+}
+
+/* 仮モンスター */
+.monkey {
+position: relative;
+width: 130px;
+height: 130px;
+margin: auto;
+}
+
+.head {
+position: absolute;
+top: 10px;
+left: 32px;
+width: 66px;
+height: 58px;
+background: #e94b35;
+border: 5px solid #2b1b10;
+border-radius: 50% 50% 44% 44%;
+}
+
+.ear-left,
+.ear-right {
+position: absolute;
+top: 4px;
+width: 28px;
+height: 28px;
+background: #e94b35;
+border: 5px solid #2b1b10;
+border-radius: 50%;
+}
+
+.ear-left { left: 20px; }
+.ear-right { right: 20px; }
+
+.body {
+position: absolute;
+top: 68px;
+left: 40px;
+width: 52px;
+height: 48px;
+background: #ff8a3d;
+border: 5px solid #2b1b10;
+border-radius: 20px;
+}
+
+.eye {
+position: absolute;
+top: 24px;
+width: 8px;
+height: 8px;
+background: #2b1b10;
+border-radius: 50%;
+}
+
+.eye.left { left: 20px; }
+.eye.right { right: 20px; }
+
+.tail {
+position: absolute;
+right: 4px;
+top: 74px;
+width: 40px;
+height: 28px;
+border: 6px solid #2b1b10;
+border-left: none;
+border-bottom: none;
+border-radius: 0 999px 0 0;
+transform: rotate(15deg);
+}
+
+.hero .head {
+background: #c93828;
+}
+
+.hero .body {
+width: 66px;
+height: 58px;
+left: 32px;
+top: 66px;
+background: #ff5a1f;
+}
+
+.hero .tail {
+width: 52px;
+height: 38px;
+border-width: 7px;
+}
+
+.hero::after {
+content: "";
+position: absolute;
+left: 42px;
+top: 52px;
+width: 46px;
+height: 14px;
+background: #ffd447;
+border: 4px solid #2b1b10;
+border-radius: 999px;
+}
+
+.light {
+position: absolute;
+left: 50%;
+top: 48%;
+width: 20px;
+height: 20px;
+background: white;
+border-radius: 50%;
+transform: translate(-50%, -50%) scale(0);
+opacity: 0;
+z-index: 3;
+}
+
+.light.active {
+animation: lightBurst 1.4s ease-out forwards;
+}
+
+@keyframes lightBurst {
+0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+30% { opacity: 1; }
+100% { transform: translate(-50%, -50%) scale(28); opacity: 0; }
+}
+
+.ray {
+position: absolute;
+left: 50%;
+top: 50%;
+width: 12px;
+height: 500px;
+background: rgba(255,255,255,0.55);
+transform-origin: center;
+opacity: 0;
+z-index: 2;
+}
+
+.ray.active {
+animation: rayFlash 1.5s ease-out forwards;
+}
+
+.ray:nth-child(1) { transform: translate(-50%, -50%) rotate(0deg); }
+.ray:nth-child(2) { transform: translate(-50%, -50%) rotate(45deg); }
+.ray:nth-child(3) { transform: translate(-50%, -50%) rotate(90deg); }
+.ray:nth-child(4) { transform: translate(-50%, -50%) rotate(135deg); }
+
+@keyframes rayFlash {
+0% { opacity: 0; }
+30% { opacity: 1; }
+100% { opacity: 0; }
+}
+
+.spark {
+position: absolute;
+left: 50%;
+top: 48%;
+width: 12px;
+height: 12px;
+background: #fff36a;
+border: 3px solid #ff8c00;
+border-radius: 50%;
+z-index: 8;
+animation: spark 0.9s ease-out forwards;
+}
+
+@keyframes spark {
+from {
+opacity: 1;
+transform: translate(0, 0) scale(1);
+}
+to {
+opacity: 0;
+transform: translate(var(--x), var(--y)) scale(2.4);
+}
+}
+
+.message {
+font-size: 22px;
+font-weight: 900;
+color: #2b1b10;
+min-height: 34px;
+margin-top: 14px;
+z-index: 5;
+}
+
+button {
+width: 100%;
+height: 72px;
+border: 5px solid #2b1b10;
+border-radius: 24px;
+background: #ff7a00;
+color: white;
+font-size: 26px;
+font-weight: 900;
+box-shadow: 0 7px 0 #2b1b10;
+z-index: 5;
+}
+
+button:active {
+transform: translateY(4px);
+box-shadow: 0 3px 0 #2b1b10;
+}
+
+.home-button {
+display: none;
+background: #34b85a;
+}
+
+.white-flash {
+position: absolute;
+inset: 0;
+background: white;
+opacity: 0;
+z-index: 10;
+pointer-events: none;
+}
+
+.white-flash.active {
+animation: whiteFlash 0.8s ease-out forwards;
+}
+
+@keyframes whiteFlash {
+0% { opacity: 0; }
+35% { opacity: 1; }
+100% { opacity: 0; }
+}
+</style>
+</head>
+<body>
+
+<div class="app" id="app">
+<div class="white-flash" id="whiteFlash"></div>
+
+<div class="title">進化</div>
+
+<div>
+<div class="stage" id="stage">
+<div class="ray"></div>
+<div class="ray"></div>
+<div class="ray"></div>
+<div class="ray"></div>
+<div class="light" id="light"></div>
+
+<div class="monster" id="monster">
+<div class="monkey" id="monsterShape">
+<div class="ear-left"></div>
+<div class="ear-right"></div>
+<div class="head">
+<div class="eye left"></div>
+<div class="eye right"></div>
+</div>
+<div class="body"></div>
+<div class="tail"></div>
+</div>
+</div>
+</div>
+
+<div class="monster-name" id="monsterName">モンキー</div>
+<div class="phase" id="monsterPhase">ビギナー期</div>
+<div class="message" id="message">進化の準備ができた！</div>
+</div>
+
+<button id="evolveButton">進化する！</button>
+<button class="home-button" id="homeButton" onclick="location.href='index.html'">ホームへ戻る</button>
+</div>
+
+<script>
+const monster = document.getElementById("monster");
+const monsterShape = document.getElementById("monsterShape");
+const monsterName = document.getElementById("monsterName");
+const monsterPhase = document.getElementById("monsterPhase");
+const message = document.getElementById("message");
+const evolveButton = document.getElementById("evolveButton");
+const homeButton = document.getElementById("homeButton");
+const light = document.getElementById("light");
+const whiteFlash = document.getElementById("whiteFlash");
+const rays = document.querySelectorAll(".ray");
+const app = document.getElementById("app");
+
+function createSparks() {
+const points = [
+[0, -130], [90, -100], [140, -20], [110, 90],
+[0, 140], [-110, 90], [-140, -20], [-90, -100],
+[45, -160], [-45, -160], [160, 55], [-160, 55],
+[70, 140], [-70, 140]
+];
+
+points.forEach(([x, y]) => {
+const spark = document.createElement("div");
+spark.className = "spark";
+spark.style.setProperty("--x", x + "px");
+spark.style.setProperty("--y", y + "px");
+app.appendChild(spark);
+
+setTimeout(() => spark.remove(), 950);
+});
+}
+
+function wait(ms) {
+return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function startEvolution() {
+evolveButton.style.display = "none";
+message.textContent = "なにかが起きそうだ…";
+
+monster.classList.add("shake");
+await wait(1000);
+
+message.textContent = "光が集まっている！";
+light.classList.add("active");
+rays.forEach(ray => ray.classList.add("active"));
+await wait(1200);
+
+monster.classList.add("silhouette");
+message.textContent = "姿が変わりはじめた！";
+await wait(900);
+
+monster.classList.add("grow");
+await wait(900);
+
+monster.classList.add("flash");
+whiteFlash.classList.add("active");
+await wait(700);
+
+// ここで進化後モンスターに切り替える
+monsterShape.classList.add("hero");
+monster.classList.remove("silhouette", "shake", "grow", "flash");
+
+monsterName.textContent = "モンガード";
+monsterPhase.textContent = "ヒーロー期";
+message.textContent = "進化完了！";
+
+createSparks();
+await wait(900);
+
+message.textContent = "新しい力を引き出そう！";
+homeButton.style.display = "block";
+}
+
+evolveButton.addEventListener("click", startEvolution);
+</script>
+
+</body>
+</html>
