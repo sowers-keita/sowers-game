@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>トレーニング② リフティングゲーム</title>
+<style>
+body { font-family: sans-serif; background: #f7f7f7; text-align: center; padding: 24px; }
+.topbar { max-width: 420px; margin: 0 auto 16px; text-align: left; }
+.back {
+background: white; color: #2b1b10; border: 3px solid #2b1b10;
+border-radius: 999px; padding: 8px 14px; font-size: 14px; font-weight: 900; cursor: pointer;
+}
+.game {
+max-width: 420px; margin: auto; background: white; border-radius: 20px;
+padding: 24px; box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+}
+h1 { font-size: 22px; margin-bottom: 8px; }
+.field {
+position: relative; height: 240px; background: linear-gradient(#cdeaff, #eafff0);
+border: 3px solid #333; border-radius: 16px; overflow: hidden; margin: 18px 0;
+}
+.ball {
+position: absolute; left: 50%; transform: translateX(-50%);
+width: 46px; height: 46px; border-radius: 50%;
+background: radial-gradient(circle at 30% 30%, #fff, #ff8c00 70%);
+border: 3px solid #333;
+}
+.hitline {
+position: absolute; left: 0; right: 0; bottom: 60px; height: 0;
+border-top: 4px dashed #1a9d35;
+}
+.hint { position: absolute; left: 0; right: 0; bottom: 30px; font-size: 13px; color: #1a9d35; font-weight: 800; }
+button.tap {
+width: 100%; padding: 16px; border: none; border-radius: 14px;
+background: #2f8ee5; color: white; font-size: 20px; font-weight: bold;
+}
+button.tap:active { transform: scale(0.98); }
+.result { margin-top: 20px; font-size: 22px; font-weight: bold; }
+.count { margin-top: 12px; font-size: 18px; }
+.small { font-size: 14px; color: #666; margin-top: 12px; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+<button class="back" onclick="location.href='training.html'">← もどる</button>
+</div>
+
+<div class="game">
+<h1>トレーニング②</h1>
+<p>ボールが緑のラインに来たらタップ！</p>
+
+<div class="field">
+<div class="ball" id="ball" style="top:20px;"></div>
+<div class="hitline"></div>
+<div class="hint">ここでタップ！</div>
+</div>
+
+<button class="tap" id="tapButton">キック！</button>
+
+<div class="result" id="result">10回成功でクリア</div>
+<div class="count" id="count">成功：0 / 10</div>
+<div class="small">クリアするとパラメーターが成長します</div>
+</div>
+
+<script>
+const ball = document.getElementById("ball");
+const result = document.getElementById("result");
+const countText = document.getElementById("count");
+const tapButton = document.getElementById("tapButton");
+
+const fieldHeight = 240;
+const ballSize = 46;
+const hitCenter = fieldHeight - 60;     // 緑ラインの位置（上からの距離）
+const tolerance = 28;                   // 許容範囲
+
+let pos = 20;
+let dir = 1;
+let speed = 3.2;
+let successCount = 0;
+let cleared = false;
+
+function animate() {
+if (!cleared) {
+pos += speed * dir;
+const maxTop = fieldHeight - ballSize - 4;
+if (pos >= maxTop) { pos = maxTop; dir = -1; }
+if (pos <= 4) { pos = 4; dir = 1; }
+ball.style.top = pos + "px";
+}
+requestAnimationFrame(animate);
+}
+
+tapButton.addEventListener("click", () => {
+if (cleared) return;
+const ballCenter = pos + ballSize / 2;
+if (Math.abs(ballCenter - hitCenter) <= tolerance) {
+successCount++;
+result.textContent = "ナイスキック！";
+result.style.color = "#1a9d35";
+speed += 0.15; // だんだん速くなる
+} else {
+result.textContent = "ミス！もう一回！";
+result.style.color = "#e53935";
+}
+countText.textContent = `成功：${successCount} / 10`;
+
+if (successCount >= 10) {
+cleared = true;
+result.textContent = "トレーニングクリア！能力アップ！";
+result.style.color = "#2f8ee5";
+tapButton.textContent = "クリア済み";
+tapButton.style.background = "#999";
+console.log("トレーニング②クリア：能力値を上げる処理");
+}
+});
+
+animate();
+</script>
+
+</body>
+</html>

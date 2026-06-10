@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>トレーニングを選ぶ</title>
+<style>
+* { box-sizing: border-box; }
+body {
+margin: 0;
+min-height: 100vh;
+font-family: system-ui, sans-serif;
+background: radial-gradient(circle at top, #fff4c7 0%, #ffd88a 45%, #ff9f5a 100%);
+display: flex;
+justify-content: center;
+align-items: center;
+padding: 14px;
+}
+.app {
+width: 100%;
+max-width: 390px;
+min-height: 92vh;
+background: #fffaf0;
+border: 5px solid #2b1b10;
+border-radius: 30px;
+box-shadow: 0 9px 0 #2b1b10;
+overflow: hidden;
+display: flex;
+flex-direction: column;
+}
+.header {
+background: #ff7a00;
+color: white;
+border-bottom: 5px solid #2b1b10;
+padding: 14px;
+display: flex;
+justify-content: space-between;
+align-items: center;
+font-weight: 900;
+}
+.header-title { font-size: 20px; }
+.back {
+background: white;
+color: #2b1b10;
+border: 3px solid #2b1b10;
+border-radius: 999px;
+padding: 6px 12px;
+font-size: 13px;
+font-weight: 900;
+cursor: pointer;
+}
+.content { flex: 1; padding: 16px; overflow-y: auto; }
+.lead {
+font-size: 15px;
+font-weight: 800;
+color: #5a3218;
+text-align: center;
+margin-bottom: 16px;
+}
+.card {
+display: block;
+width: 100%;
+text-align: left;
+background: #fff1cf;
+border: 4px solid #2b1b10;
+border-radius: 22px;
+padding: 16px;
+box-shadow: 0 5px 0 #2b1b10;
+margin-bottom: 16px;
+cursor: pointer;
+text-decoration: none;
+}
+.card:active { transform: translateY(4px); box-shadow: 0 1px 0 #2b1b10; }
+.card-emoji { font-size: 36px; }
+.card-title {
+font-size: 20px;
+font-weight: 900;
+color: #2b1b10;
+margin: 6px 0 4px;
+}
+.card-desc { font-size: 13px; font-weight: 700; color: #5a3218; }
+.card.blue { background: #d6ecff; }
+.card.green { background: #d9f7df; }
+</style>
+</head>
+<body>
+<div class="app">
+<div class="header">
+<div class="header-title">トレーニング</div>
+<button class="back" onclick="location.href='index.html'">← ホーム</button>
+</div>
+<div class="content">
+<div class="lead">トレーニングをして、能力を上限まで伸ばそう！</div>
+
+<a class="card" href="training1.html">
+<div class="card-emoji">🎯</div>
+<div class="card-title">① ストップゲーム</div>
+<div class="card-desc">動くバーを真ん中で止めよう。5回成功でクリア！</div>
+</a>
+
+<a class="card blue" href="training2.html">
+<div class="card-emoji">⚽</div>
+<div class="card-title">② リフティングゲーム</div>
+<div class="card-desc">タイミングよくタップ。10回成功でクリア！</div>
+</a>
+
+<a class="card green" href="training3.html">
+<div class="card-emoji">💪</div>
+<div class="card-title">③ 連打ゲーム</div>
+<div class="card-desc">10秒で20回以上タップしてクリア！</div>
+</a>
+</div>
+</div>
+</body>
+</html>

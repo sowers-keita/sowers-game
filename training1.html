@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>トレーニング① ストップゲーム</title>
+<style>
+body {
+font-family: sans-serif;
+background: #f7f7f7;
+text-align: center;
+padding: 24px;
+}
+
+.topbar {
+max-width: 420px;
+margin: 0 auto 16px;
+text-align: left;
+}
+
+.back {
+background: white;
+color: #2b1b10;
+border: 3px solid #2b1b10;
+border-radius: 999px;
+padding: 8px 14px;
+font-size: 14px;
+font-weight: 900;
+cursor: pointer;
+}
+
+.game {
+max-width: 420px;
+margin: auto;
+background: white;
+border-radius: 20px;
+padding: 24px;
+box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+}
+
+h1 {
+font-size: 22px;
+margin-bottom: 8px;
+}
+
+.bar {
+position: relative;
+height: 38px;
+background: #ddd;
+border-radius: 20px;
+overflow: hidden;
+margin: 32px 0 18px;
+border: 3px solid #333;
+}
+
+.success-zone {
+position: absolute;
+left: 42%;
+width: 16%;
+height: 100%;
+background: #8ee28e;
+}
+
+.marker {
+position: absolute;
+top: -5px;
+width: 18px;
+height: 48px;
+background: #ff5a5a;
+border: 3px solid #333;
+border-radius: 8px;
+}
+
+button.stop {
+width: 100%;
+padding: 16px;
+border: none;
+border-radius: 14px;
+background: #ff8c00;
+color: white;
+font-size: 20px;
+font-weight: bold;
+}
+
+button.stop:active {
+transform: scale(0.98);
+}
+
+.result {
+margin-top: 20px;
+font-size: 22px;
+font-weight: bold;
+}
+
+.count {
+margin-top: 12px;
+font-size: 18px;
+}
+
+.small {
+font-size: 14px;
+color: #666;
+margin-top: 12px;
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+<button class="back" onclick="location.href='training.html'">← もどる</button>
+</div>
+
+<div class="game">
+<h1>トレーニング①</h1>
+<p>赤いバーを真ん中の緑ゾーンで止めよう！</p>
+
+<div class="bar">
+<div class="success-zone"></div>
+<div class="marker" id="marker"></div>
+</div>
+
+<button class="stop" id="stopButton">ストップ！</button>
+
+<div class="result" id="result">5回成功でクリア</div>
+<div class="count" id="count">成功：0 / 5</div>
+<div class="small">クリアするとパラメーターが成長します</div>
+</div>
+
+<script>
+const marker = document.getElementById("marker");
+const result = document.getElementById("result");
+const countText = document.getElementById("count");
+const stopButton = document.getElementById("stopButton");
+
+let position = 0;
+let direction = 1;
+let speed = 2.4;
+let successCount = 0;
+let cleared = false;
+
+function animate() {
+if (!cleared) {
+position += speed * direction;
+
+if (position >= 95) {
+position = 95;
+direction = -1;
+}
+
+if (position <= 0) {
+position = 0;
+direction = 1;
+}
+
+marker.style.left = position + "%";
+}
+
+requestAnimationFrame(animate);
+}
+
+stopButton.addEventListener("click", () => {
+if (cleared) return;
+
+// 成功ゾーン：42%〜58%
+if (position >= 42 && position <= 58) {
+successCount++;
+result.textContent = "成功！いいタイミング！";
+result.style.color = "#1a9d35";
+} else {
+result.textContent = "失敗！もう一回！";
+result.style.color = "#e53935";
+}
+
+countText.textContent = `成功：${successCount} / 5`;
+
+if (successCount >= 5) {
+cleared = true;
+result.textContent = "トレーニングクリア！能力アップ！";
+result.style.color = "#ff8c00";
+stopButton.textContent = "クリア済み";
+stopButton.style.background = "#999";
+
+// ここで後からDBに成長結果を保存する
+console.log("トレーニングクリア：能力値を上げる処理");
+}
+});
+
+animate();
+</script>
+
+</body>
+</html>

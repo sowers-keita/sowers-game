@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sowers Monster ホーム</title>
+<style>
+* { box-sizing: border-box; }
+
+body {
+margin: 0;
+min-height: 100vh;
+font-family: system-ui, sans-serif;
+background: radial-gradient(circle at top, #fff4c7 0%, #ffd88a 45%, #ff9f5a 100%);
+display: flex;
+justify-content: center;
+align-items: center;
+padding: 14px;
+}
+
+.app {
+width: 100%;
+max-width: 390px;
+min-height: 92vh;
+background: #fffaf0;
+border: 5px solid #2b1b10;
+border-radius: 30px;
+box-shadow: 0 9px 0 #2b1b10;
+overflow: hidden;
+display: flex;
+flex-direction: column;
+}
+
+.header {
+background: #ff7a00;
+color: white;
+border-bottom: 5px solid #2b1b10;
+padding: 14px;
+display: flex;
+justify-content: space-between;
+align-items: center;
+font-weight: 900;
+}
+
+.header-title {
+font-size: 21px;
+}
+
+.settings {
+background: white;
+color: #2b1b10;
+border: 3px solid #2b1b10;
+border-radius: 999px;
+padding: 6px 10px;
+font-size: 13px;
+font-weight: 900;
+}
+
+.content {
+flex: 1;
+padding: 14px;
+overflow-y: auto;
+padding-bottom: 92px;
+}
+
+.monster-card {
+background: #fff1cf;
+border: 4px solid #2b1b10;
+border-radius: 26px;
+padding: 14px;
+box-shadow: 0 5px 0 #2b1b10;
+text-align: center;
+position: relative;
+overflow: hidden;
+}
+
+.screen {
+height: 180px;
+background: linear-gradient(#e6f8ff 0%, #f8fff1 62%, #9bdc75 62%, #5fbd4a 100%);
+border: 4px solid #2b1b10;
+border-radius: 22px;
+position: relative;
+overflow: hidden;
+}
+
+.ground {
+position: absolute;
+left: 0;
+right: 0;
+bottom: 48px;
+height: 4px;
+background: #2b1b10;
+opacity: 0.25;
+}
+
+.monster {
+position: absolute;
+left: 50%;
+bottom: 52px;
+width: 82px;
+height: 82px;
+transform: translateX(-50%);
+animation: walk 1.1s infinite alternate ease-in-out;
+}
+
+@keyframes walk {
+from { transform: translateX(-50%) translateY(0); }
+to { transform: translateX(-50%) translateY(-8px); }
+}
+
+.monster-head {
+position: absolute;
+top: 6px;
+left: 18px;
+width: 48px;
+height: 42px;
+background: #e94b35;
+border: 4px solid #2b1b10;
+border-radius: 50% 50% 44% 44%;
+}
+
+.monster-ear-left,
+.monster-ear-right {
+position: absolute;
+top: 0;
+width: 18px;
+height: 18px;
+background: #e94b35;
+border: 4px solid #2b1b10;
+border-radius: 50%;
+}
+
+.monster-ear-left { left: 12px; }
+.monster-ear-right { right: 12px; }
+
+.monster-body {
+position: absolute;
+top: 42px;
+left: 24px;
+width: 36px;
+height: 34px;
+background: #ff8a3d;
+border: 4px solid #2b1b10;
+border-radius: 16px;
+}
+
+.eye {
+position: absolute;
+top: 18px;
+width: 6px;
+height: 6px;
+background: #2b1b10;
+border-radius: 50%;
+}
+
+.eye.left { left: 15px; }
+.eye.right { right: 15px; }
+
+.tail {
+position: absolute;
+right: 4px;
+top: 43px;
+width: 26px;
+height: 18px;
+border: 5px solid #2b1b10;
+border-left: none;
+border-bottom: none;
+border-radius: 0 999px 0 0;
+transform: rotate(15deg);
+}
+
+.name {
+margin-top: 12px;
+font-size: 24px;
+font-weight: 900;
+color: #2b1b10;
+}
+
+.stage {
+display: inline-block;
+margin-top: 6px;
+padding: 6px 12px;
+background: #ff7a00;
+color: white;
+border: 3px solid #2b1b10;
+border-radius: 999px;
+font-size: 14px;
+font-weight: 900;
+}
+
+.message {
+margin-top: 10px;
+font-size: 14px;
+font-weight: 800;
+color: #5a3218;
+}
+
+.section {
+margin-top: 14px;
+background: white;
+border: 4px solid #2b1b10;
+border-radius: 22px;
+padding: 12px;
+box-shadow: 0 5px 0 #2b1b10;
+}
+
+.section-title {
+font-size: 17px;
+font-weight: 900;
+color: #2b1b10;
+margin-bottom: 10px;
+text-align: left;
+}
+
+.status-row {
+margin-bottom: 10px;
+}
+
+.status-label {
+display: flex;
+justify-content: space-between;
+font-size: 14px;
+font-weight: 900;
+color: #2b1b10;
+margin-bottom: 4px;
+}
+
+.bar {
+height: 18px;
+border: 3px solid #2b1b10;
+border-radius: 999px;
+overflow: hidden;
+background: #f0f0f0;
+}
+
+.fill {
+height: 100%;
+background: #ff7a00;
+}
+
+.battle-box {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 10px;
+text-align: center;
+}
+
+.battle-item {
+background: #fff1cf;
+border: 3px solid #2b1b10;
+border-radius: 16px;
+padding: 10px;
+font-weight: 900;
+color: #2b1b10;
+}
+
+.battle-number {
+font-size: 26px;
+color: #ff4b35;
+margin-top: 2px;
+}
+
+.evolve-button {
+width: 100%;
+margin-top: 14px;
+height: 62px;
+border: 4px solid #2b1b10;
+border-radius: 20px;
+background: #ffd447;
+color: #2b1b10;
+font-size: 22px;
+font-weight: 900;
+box-shadow: 0 5px 0 #2b1b10;
+}
+
+.main-buttons {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 12px;
+margin-top: 14px;
+}
+
+.main-button {
+height: 72px;
+border: 4px solid #2b1b10;
+border-radius: 20px;
+background: #ff8a3d;
+color: white;
+font-size: 18px;
+font-weight: 900;
+box-shadow: 0 5px 0 #2b1b10;
+cursor: pointer;
+}
+
+.main-button.blue { background: #2f8ee5; }
+.main-button.green { background: #34b85a; }
+.main-button.pink { background: #ff6fb1; }
+
+button:active {
+transform: translateY(4px);
+box-shadow: 0 1px 0 #2b1b10;
+}
+
+.bottom-nav {
+position: fixed;
+bottom: 14px;
+left: 50%;
+transform: translateX(-50%);
+width: calc(100% - 28px);
+max-width: 390px;
+height: 70px;
+background: #fffaf0;
+border: 4px solid #2b1b10;
+border-radius: 24px;
+box-shadow: 0 6px 0 #2b1b10;
+display: grid;
+grid-template-columns: repeat(5, 1fr);
+overflow: hidden;
+z-index: 10;
+}
+
+.nav-item {
+border: none;
+background: transparent;
+font-size: 12px;
+font-weight: 900;
+color: #2b1b10;
+cursor: pointer;
+}
+
+.nav-item.active {
+background: #ffdf9d;
+}
+
+.hidden {
+display: none;
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+<div class="header">
+<div class="header-title">Sowers Monster</div>
+<button class="settings">設定</button>
+</div>
+
+<div class="content">
+<div class="monster-card">
+<div class="screen">
+<div class="ground"></div>
+
+<div class="monster">
+<div class="monster-ear-left"></div>
+<div class="monster-ear-right"></div>
+<div class="monster-head">
+<div class="eye left"></div>
+<div class="eye right"></div>
+</div>
+<div class="monster-body"></div>
+<div class="tail"></div>
+</div>
+</div>
+
+<div class="name">モンキー</div>
+<div class="stage">ビギナー期</div>
+<div class="message">今日もトレーニングしたいみたい！</div>
+</div>
+
+<div class="section">
+<div class="section-title">ステータス</div>
+
+<div class="status-row">
+<div class="status-label">
+<span>パワー</span>
+<span>35 / 50</span>
+</div>
+<div class="bar"><div class="fill" style="width:70%;"></div></div>
+</div>
+
+<div class="status-row">
+<div class="status-label">
+<span>スタミナ</span>
+<span>40 / 55</span>
+</div>
+<div class="bar"><div class="fill" style="width:72%;"></div></div>
+</div>
+
+<div class="status-row">
+<div class="status-label">
+<span>スピード</span>
+<span>28 / 45</span>
+</div>
+<div class="bar"><div class="fill" style="width:62%;"></div></div>
+</div>
+
+<div class="status-row">
+<div class="status-label">
+<span>テクニック</span>
+<span>31 / 50</span>
+</div>
+<div class="bar"><div class="fill" style="width:62%;"></div></div>
+</div>
+</div>
+
+<div class="section">
+<div class="section-title">バトル情報</div>
+
+<div class="battle-box">
+<div class="battle-item">
+戦闘力
+<div class="battle-number">125</div>
+</div>
+
+<div class="battle-item">
+現在順位
+<div class="battle-number">18位</div>
+</div>
+</div>
+</div>
+
+<button class="evolve-button" id="evolveButton">進化できる！</button>
+
+<div class="main-buttons">
+<button class="main-button" onclick="location.href='training.html'">トレーニング</button>
+<button class="main-button blue" onclick="alert('持ち物画面は現在開発中です')">持ち物</button>
+<button class="main-button green" onclick="alert('バトル画面は現在開発中です')">バトル</button>
+<button class="main-button pink" onclick="alert('図鑑は現在開発中です')">図鑑</button>
+</div>
+</div>
+</div>
+
+<div class="bottom-nav">
+<button class="nav-item active">ホーム</button>
+<button class="nav-item" onclick="alert('QR読み込みは現在開発中です')">QR</button>
+<button class="nav-item" onclick="alert('ランキングは現在開発中です')">ランキング</button>
+<button class="nav-item" onclick="alert('ミッションは現在開発中です')">ミッション</button>
+<button class="nav-item" onclick="alert('設定は現在開発中です')">設定</button>
+</div>
+
+<script>
+const canEvolve = true;
+const evolveButton = document.getElementById("evolveButton");
+
+if (!canEvolve) {
+evolveButton.classList.add("hidden");
+}
+
+evolveButton.addEventListener("click", () => {
+alert("進化アニメーション画面へ移動します");
+});
+</script>
+
+</body>
+</html>
