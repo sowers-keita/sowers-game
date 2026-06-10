@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>モンスター図鑑</title>
+<style>
+* { box-sizing: border-box; }
+body {
+margin: 0; min-height: 100vh; font-family: system-ui, sans-serif;
+background: radial-gradient(circle at top, #fff4c7 0%, #ffd88a 45%, #ff9f5a 100%);
+display: flex; justify-content: center; align-items: flex-start; padding: 14px;
+}
+.app {
+width: 100%; max-width: 390px; min-height: 92vh; background: #fffaf0;
+border: 5px solid #2b1b10; border-radius: 30px; box-shadow: 0 9px 0 #2b1b10;
+overflow: hidden; display: flex; flex-direction: column;
+}
+.header {
+background: #a05fe5; color: white; border-bottom: 5px solid #2b1b10; padding: 14px;
+display: flex; justify-content: space-between; align-items: center; font-weight: 900;
+}
+.header-title { font-size: 20px; }
+.back {
+background: white; color: #2b1b10; border: 3px solid #2b1b10; border-radius: 999px;
+padding: 6px 12px; font-size: 13px; font-weight: 900; cursor: pointer;
+}
+.content { flex: 1; padding: 14px; overflow-y: auto; padding-bottom: 92px; }
+
+.progress {
+background: white; border: 4px solid #2b1b10; border-radius: 18px; padding: 10px;
+box-shadow: 0 5px 0 #2b1b10; text-align: center; font-weight: 900; color: #2b1b10; margin-bottom: 12px;
+}
+.progress .big { font-size: 26px; color: #a05fe5; }
+
+.filters { display: flex; gap: 8px; margin-bottom: 14px; }
+.filter {
+flex: 1; padding: 8px; border: 3px solid #2b1b10; border-radius: 12px; background: white;
+font-size: 13px; font-weight: 900; color: #2b1b10; cursor: pointer; box-shadow: 0 3px 0 #2b1b10;
+}
+.filter.active { background: #a05fe5; color: white; }
+
+.grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+.card {
+background: white; border: 4px solid #2b1b10; border-radius: 16px; padding: 8px 4px;
+box-shadow: 0 4px 0 #2b1b10; text-align: center; cursor: pointer;
+}
+.card.locked { background: #ece7df; cursor: default; }
+.no { font-size: 11px; font-weight: 900; color: #888; }
+.mon {
+width: 46px; height: 46px; border-radius: 50%; border: 3px solid #2b1b10; margin: 4px auto;
+position: relative;
+}
+.mon::before, .mon::after {
+content: ""; position: absolute; top: 15px; width: 5px; height: 5px; background: #2b1b10; border-radius: 50%;
+}
+.mon::before { left: 12px; }
+.mon::after { right: 12px; }
+.card.locked .mon { background: #2b1b10 !important; }
+.card.locked .mon::before, .card.locked .mon::after { background: #6b6b6b; }
+.name { font-size: 12px; font-weight: 900; color: #2b1b10; line-height: 1.2; min-height: 28px; display: flex; align-items: center; justify-content: center; }
+.card.locked .name { color: #999; }
+
+.overlay {
+position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+display: none; justify-content: center; align-items: center; padding: 20px; z-index: 50;
+}
+.overlay.show { display: flex; }
+.detail {
+width: 100%; max-width: 320px; background: #fffaf0; border: 5px solid #2b1b10;
+border-radius: 26px; box-shadow: 0 8px 0 #2b1b10; padding: 22px; text-align: center;
+}
+.detail .mon { width: 90px; height: 90px; }
+.detail .mon::before, .detail .mon::after { top: 30px; width: 8px; height: 8px; }
+.detail .mon::before { left: 24px; }
+.detail .mon::after { right: 24px; }
+.d-name { font-size: 22px; font-weight: 900; color: #2b1b10; margin: 8px 0 4px; }
+.d-tag {
+display: inline-block; margin: 2px; padding: 4px 10px; border: 3px solid #2b1b10; border-radius: 999px;
+font-size: 12px; font-weight: 900;
+}
+.d-desc { font-size: 13px; font-weight: 700; color: #5a3218; margin-top: 10px; }
+.close-btn {
+width: 100%; margin-top: 16px; padding: 12px; border: 3px solid #2b1b10; border-radius: 14px;
+background: #a05fe5; color: white; font-size: 16px; font-weight: 900; cursor: pointer; box-shadow: 0 4px 0 #2b1b10;
+}
+
+.bottom-nav {
+position: fixed; bottom: 14px; left: 50%; transform: translateX(-50%);
+width: calc(100% - 28px); max-width: 390px; height: 70px; background: #fffaf0;
+border: 4px solid #2b1b10; border-radius: 24px; box-shadow: 0 6px 0 #2b1b10;
+display: grid; grid-template-columns: repeat(5, 1fr); overflow: hidden; z-index: 10;
+}
+.nav-item { border: none; background: transparent; font-size: 12px; font-weight: 900; color: #2b1b10; cursor: pointer; }
+.nav-item.active { background: #ffdf9d; }
+</style>
+</head>
+<body>
+<div class="app">
+<div class="header">
+<div class="header-title">📖 モンスター図鑑</div>
+<button class="back" onclick="location.href='index.html'">← ホーム</button>
+</div>
+<div class="content">
+<div class="progress">発見 <span class="big" id="found">0</span> / <span id="total">18</span> 種</div>
+
+<div class="filters">
+<button class="filter active" data-f="all">すべて</button>
+<button class="filter" data-f="found">登録済み</button>
+<button class="filter" data-f="locked">未発見</button>
+</div>
+
+<div class="grid" id="grid"></div>
+</div>
+
+<div class="bottom-nav">
+<button class="nav-item" onclick="location.href='index.html'">ホーム</button>
+<button class="nav-item" onclick="alert('QR読み込みは現在開発中です')">QR</button>
+<button class="nav-item" onclick="location.href='ranking.html'">ランキング</button>
+<button class="nav-item" onclick="alert('ミッションは現在開発中です')">ミッション</button>
+<button class="nav-item active">図鑑</button>
+</div>
+</div>
+
+<div class="overlay" id="overlay">
+<div class="detail">
+<div class="mon" id="dMon"></div>
+<div class="d-name" id="dName"></div>
+<div id="dTags"></div>
+<div class="d-desc" id="dDesc"></div>
+<button class="close-btn" onclick="closeOverlay()">とじる</button>
+</div>
+</div>
+
+<script>
+const RED = "#e94b35", BLUE = "#2f8ee5", PINK = "#ff6fb1";
+
+// 初期18種（サル系/イヌ系/トリ系 × 進化形）。確定済みの名前を優先、未確定は仮称。
+const MONSTERS = [
+// サル系（赤い卵）
+{ no:1,  name:"サルのこ",        series:"サル系", egg:"赤い卵", stage:"スタート期", type:"—",         color:RED,  found:true,  desc:"赤い卵から生まれた元気な子ザル。" },
+{ no:2,  name:"モンキー",          series:"サル系", egg:"赤い卵", stage:"ビギナー期", type:"—",         color:RED,  found:true,  desc:"好奇心いっぱい。いろんなことを吸収する。" },
+{ no:3,  name:"モンガード",        series:"サル系", egg:"赤い卵", stage:"ヒーロー期", type:"パワー型",   color:RED,  found:true,  desc:"力強い一撃が得意な頼れる存在。" },
+{ no:4,  name:"覚醒モンガード",    series:"サル系", egg:"赤い卵", stage:"覚醒期",     type:"パワー型",   color:RED,  found:false, desc:"" },
+{ no:5,  name:"スウィフトモンキー",series:"サル系", egg:"赤い卵", stage:"ヒーロー期", type:"スピード型", color:RED,  found:false, desc:"" },
+{ no:6,  name:"覚醒スウィフト",    series:"サル系", egg:"赤い卵", stage:"覚醒期",     type:"スピード型", color:RED,  found:false, desc:"" },
+// イヌ系（青い卵）
+{ no:7,  name:"ワンちゃん",        series:"イヌ系", egg:"青い卵", stage:"スタート期", type:"—",         color:BLUE, found:true,  desc:"好奇心いっぱいの元気な子犬。" },
+{ no:8,  name:"ワンダー",          series:"イヌ系", egg:"青い卵", stage:"ビギナー期", type:"—",         color:BLUE, found:true,  desc:"みんなのことが大好き！いろんなことを吸収する。" },
+{ no:9,  name:"ガーディアン",      series:"イヌ系", egg:"青い卵", stage:"ヒーロー期", type:"スタミナ型", color:BLUE, found:true,  desc:"大きな体で仲間を守る頼れる存在。" },
+{ no:10, name:"セントガーディアン",series:"イヌ系", egg:"青い卵", stage:"覚醒期",     type:"スタミナ型", color:BLUE, found:false, desc:"" },
+{ no:11, name:"シャドウハウンド",  series:"イヌ系", egg:"青い卵", stage:"ヒーロー期", type:"テクニック型",color:BLUE, found:true,  desc:"影のように現れて相手を惑わす戦略家。" },
+{ no:12, name:"マスターシャープ",  series:"イヌ系", egg:"青い卵", stage:"覚醒期",     type:"テクニック型",color:BLUE, found:false, desc:"" },
+// トリ系（ピンクの卵）
+{ no:13, name:"ピヨ",              series:"トリ系", egg:"ピンクの卵", stage:"スタート期", type:"—",        color:PINK, found:true,  desc:"ピンクの卵から生まれた小さなヒナ。" },
+{ no:14, name:"ピヨン",            series:"トリ系", egg:"ピンクの卵", stage:"ビギナー期", type:"—",        color:PINK, found:true,  desc:"元気いっぱい飛び回るヒヨコ。" },
+{ no:15, name:"バードン",          series:"トリ系", egg:"ピンクの卵", stage:"ヒーロー期", type:"スピード型",color:PINK, found:true,  desc:"素早く空をかける俊敏な鳥。" },
+{ no:16, name:"覚醒バードン",      series:"トリ系", egg:"ピンクの卵", stage:"覚醒期",    type:"スピード型",color:PINK, found:false, desc:"" },
+{ no:17, name:"テクトリ",          series:"トリ系", egg:"ピンクの卵", stage:"ヒーロー期", type:"テクニック型",color:PINK,found:false, desc:"" },
+{ no:18, name:"覚醒ピヨン",        series:"トリ系", egg:"ピンクの卵", stage:"覚醒期",    type:"テクニック型",color:PINK,found:false, desc:"" },
+];
+
+let filter = "all";
+const grid = document.getElementById("grid");
+const overlay = document.getElementById("overlay");
+
+document.getElementById("total").textContent = MONSTERS.length;
+document.getElementById("found").textContent = MONSTERS.filter(m=>m.found).length;
+
+function render() {
+grid.innerHTML = "";
+MONSTERS.filter(m => filter==="all" || (filter==="found" && m.found) || (filter==="locked" && !m.found))
+.forEach(m => {
+const card = document.createElement("div");
+card.className = "card" + (m.found ? "" : " locked");
+card.innerHTML = `
+<div class="no">No.${String(m.no).padStart(2,"0")}</div>
+<div class="mon" style="background:${m.found ? m.color : "#2b1b10"}"></div>
+<div class="name">${m.found ? m.name : "？？？"}</div>
+`;
+if (m.found) card.addEventListener("click", () => showDetail(m));
+grid.appendChild(card);
+});
+}
+
+function showDetail(m) {
+document.getElementById("dMon").style.background = m.color;
+document.getElementById("dName").textContent = m.name;
+document.getElementById("dTags").innerHTML =
+`<span class="d-tag" style="background:${m.color};color:#fff">${m.egg}・${m.series}</span>` +
+`<span class="d-tag" style="background:#fff">${m.stage}</span>` +
+(m.type !== "—" ? `<span class="d-tag" style="background:#ffd447">${m.type}</span>` : "");
+document.getElementById("dDesc").textContent = m.desc || "";
+overlay.classList.add("show");
+}
+function closeOverlay() { overlay.classList.remove("show"); }
+
+document.querySelectorAll(".filter").forEach(b => {
+b.addEventListener("click", () => {
+document.querySelectorAll(".filter").forEach(x=>x.classList.remove("active"));
+b.classList.add("active");
+filter = b.dataset.f;
+render();
+});
+});
+
+render();
+</script>
+</body>
+</html>
