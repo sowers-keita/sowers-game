@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>QR読み取り</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+<style>
+* { box-sizing: border-box; }
+body {
+margin: 0; min-height: 100vh; font-family: system-ui, sans-serif;
+background: radial-gradient(circle at top, #fff4c7 0%, #ffd88a 45%, #ff9f5a 100%);
+display: flex; justify-content: center; align-items: flex-start; padding: 14px;
+}
+.app {
+width: 100%; max-width: 390px; min-height: 92vh; background: #fffaf0;
+border: 5px solid #2b1b10; border-radius: 30px; box-shadow: 0 9px 0 #2b1b10;
+overflow: hidden; display: flex; flex-direction: column;
+}
+.header {
+background: #ff7a00; color: white; border-bottom: 5px solid #2b1b10; padding: 14px;
+display: flex; justify-content: space-between; align-items: center; font-weight: 900;
+}
+.header-title { font-size: 20px; }
+.back { background: white; color: #2b1b10; border: 3px solid #2b1b10; border-radius: 999px; padding: 6px 12px; font-size: 13px; font-weight: 900; cursor: pointer; }
+.content { flex: 1; padding: 16px; overflow-y: auto; }
+.lead { font-size: 14px; font-weight: 800; color: #5a3218; text-align: center; margin-bottom: 14px; }
+#reader { width: 100%; border: 4px solid #2b1b10; border-radius: 16px; overflow: hidden; background: #000; min-height: 60px; }
+.btn { width: 100%; margin-top: 12px; padding: 14px; border: 4px solid #2b1b10; border-radius: 16px; font-size: 17px; font-weight: 900; cursor: pointer; box-shadow: 0 5px 0 #2b1b10; }
+.btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #2b1b10; }
+.scan { background: #ff7a00; color: white; }
+.demo { background: #34b85a; color: white; }
+.manual { margin-top: 18px; }
+.manual label { display:block; font-size: 13px; font-weight: 900; color: #2b1b10; margin-bottom: 6px; }
+.manual input { width: 100%; padding: 12px; border: 3px solid #2b1b10; border-radius: 12px; font-size: 14px; }
+.apply { background: #2f8ee5; color: white; }
+.result { display:none; margin-top: 16px; background: #fff1cf; border: 4px solid #2b1b10; border-radius: 18px; padding: 16px; box-shadow: 0 5px 0 #2b1b10; text-align: center; }
+.result.show { display: block; }
+.result .seed-name { font-size: 22px; font-weight: 900; color: #ff7a00; }
+.result .msg { font-size: 14px; font-weight: 800; color: #2b1b10; margin-top: 6px; }
+.to-inv { display:inline-block; margin-top: 12px; padding: 10px 18px; border: 3px solid #2b1b10; border-radius: 12px; background: #ffd447; color:#2b1b10; font-weight: 900; text-decoration: none; box-shadow: 0 4px 0 #2b1b10; }
+.err { color: #e53935; font-weight: 900; font-size: 13px; margin-top: 8px; min-height: 16px; text-align:center; }
+</style>
+</head>
+<body>
+<div class="app">
+<div class="header">
+<div class="header-title">QR読み取り</div>
+<button class="back" onclick="location.href='index.html'">← ホーム</button>
+</div>
+<div class="content">
+<div class="lead">練習会場のQRコードを読み取って<br>種をゲットしよう！</div>
+
+<div id="reader"></div>
+<button class="btn scan" id="scanBtn">カメラでスキャン開始</button>
+<button class="btn demo" id="demoBtn">デモで読み取る（体験用）</button>
+
+<div class="manual">
+<label>コードを手入力（任意）</label>
+<input id="codeInput" placeholder="例：SOWERS:allround:5:2026-06-10" />
+<button class="btn apply" id="applyBtn">このコードを適用</button>
+</div>
+
+<div class="err" id="err"></div>
+
+<div class="result" id="result">
+<div class="seed-name" id="seedName"></div>
+<div class="msg" id="msg"></div>
+<a class="to-inv" href="inventory.html">持ち物で確認する →</a>
+</div>
+</div>
+</div>
+
+<script>
+const SEEDNAME = { power:"パワーの種", stamina:"スタミナの種", speed:"スピードの種", technique:"テクニックの種", allround:"万能の種", rainbow:"虹の種" };
+const DEMO_CODES = ["SOWERS:allround:5", "SOWERS:power:3", "SOWERS:speed:3", "SOWERS:technique:3"];
+
+function giveSeed(seed, amount){
+const counts = JSON.parse(localStorage.getItem("sm_seeds") || "null") || { power:3, stamina:3, speed:3, technique:3, allround:2, rainbow:1 };
+counts[seed] = (counts[seed]||0) + amount;
+localStorage.setItem("sm_seeds", JSON.stringify(counts));
+}
+
+function applyCode(code){
+const err = document.getElementById("err");
+err.textContent = "";
+const parts = (code||"").trim().split(":");
+if (parts[0] !== "SOWERS" || !SEEDNAME[parts[1]]) {
+err.textContent = "このQR/コードは読み取れませんでした";
+return false;
+}
+const seed = parts[1];
+const amount = parseInt(parts[2] || "1", 10) || 1;
+giveSeed(seed, amount);
+document.getElementById("seedName").textContent = SEEDNAME[seed] + " ×" + amount + " GET！";
+document.getElementById("msg").textContent = "持ち物に追加しました。種を使って能力の上限を上げよう！";
+document.getElementById("result").classList.add("show");
+return true;
+}
+
+document.getElementById("applyBtn").addEventListener("click", () => {
+applyCode(document.getElementById("codeInput").value);
+});
+document.getElementById("demoBtn").addEventListener("click", () => {
+applyCode(DEMO_CODES[Math.floor(Math.random()*DEMO_CODES.length)]);
+});
+
+// カメラスキャン（html5-qrcode）
+let html5Qr = null;
+document.getElementById("scanBtn").addEventListener("click", () => {
+const btn = document.getElementById("scanBtn");
+if (html5Qr && html5Qr.isScanning) {
+html5Qr.stop().then(()=>{ btn.textContent = "カメラでスキャン開始"; });
+return;
+}
+html5Qr = new Html5Qrcode("reader");
+btn.textContent = "スキャン停止";
+html5Qr.start(
+{ facingMode: "environment" },
+{ fps: 10, qrbox: 220 },
+(decodedText) => {
+if (applyCode(decodedText)) {
+html5Qr.stop().then(()=>{ btn.textContent = "カメラでスキャン開始"; });
+}
+},
+() => {}
+).catch(err => {
+document.getElementById("err").textContent = "カメラを起動できませんでした。コード手入力かデモをご利用ください。";
+btn.textContent = "カメラでスキャン開始";
+});
+});
+</script>
+</body>
+</html>
