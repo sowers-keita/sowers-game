@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ミッション</title>
+<style>
+* { box-sizing: border-box; }
+body {
+margin: 0; min-height: 100vh; font-family: system-ui, sans-serif;
+background: radial-gradient(circle at top, #fff4c7 0%, #ffd88a 45%, #ff9f5a 100%);
+display: flex; justify-content: center; align-items: flex-start; padding: 14px;
+}
+.app {
+width: 100%; max-width: 390px; min-height: 92vh; background: #fffaf0;
+border: 5px solid #2b1b10; border-radius: 30px; box-shadow: 0 9px 0 #2b1b10;
+overflow: hidden; display: flex; flex-direction: column;
+}
+.header {
+background: #34b85a; color: white; border-bottom: 5px solid #2b1b10; padding: 14px;
+display: flex; justify-content: space-between; align-items: center; font-weight: 900;
+}
+.header-title { font-size: 20px; }
+.back {
+background: white; color: #2b1b10; border: 3px solid #2b1b10; border-radius: 999px;
+padding: 6px 12px; font-size: 13px; font-weight: 900; cursor: pointer;
+}
+.content { flex: 1; padding: 14px; overflow-y: auto; padding-bottom: 92px; }
+
+.group-title { font-size: 16px; font-weight: 900; color: #2b1b10; margin: 6px 0 10px; }
+.group-title.parent { color: #a05fe5; }
+
+.mission {
+background: white; border: 4px solid #2b1b10; border-radius: 18px; padding: 14px;
+box-shadow: 0 5px 0 #2b1b10; margin-bottom: 14px;
+}
+.m-name { font-size: 17px; font-weight: 900; color: #2b1b10; }
+.m-items { font-size: 13px; font-weight: 700; color: #5a3218; margin: 6px 0 10px; line-height: 1.5; }
+.reward { display: inline-block; padding: 4px 10px; border: 3px solid #2b1b10; border-radius: 999px; background: #ffd447; font-size: 12px; font-weight: 900; margin-bottom: 10px; }
+.do-btn {
+width: 100%; padding: 12px; border: 3px solid #2b1b10; border-radius: 12px;
+background: #34b85a; color: white; font-size: 16px; font-weight: 900; cursor: pointer; box-shadow: 0 4px 0 #2b1b10;
+}
+.do-btn.parent { background: #a05fe5; }
+.do-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #2b1b10; }
+.done { background: #ddd !important; color: #888 !important; box-shadow: 0 4px 0 #aaa !important; border-color:#aaa !important; cursor: default; }
+
+.overlay {
+position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+display: none; justify-content: center; align-items: center; padding: 20px; z-index: 50;
+}
+.overlay.show { display: flex; }
+.dialog {
+width: 100%; max-width: 320px; background: #fffaf0; border: 5px solid #2b1b10;
+border-radius: 26px; box-shadow: 0 8px 0 #2b1b10; padding: 22px; text-align: center;
+}
+.dialog h3 { margin: 0 0 8px; font-size: 18px; color: #2b1b10; }
+.dialog p { font-size: 13px; color: #5a3218; font-weight: 700; margin: 4px 0 12px; }
+.pin-input {
+width: 100%; padding: 12px; border: 3px solid #2b1b10; border-radius: 12px; font-size: 22px;
+text-align: center; letter-spacing: 8px; font-weight: 900;
+}
+.dialog-btns { display: flex; gap: 8px; margin-top: 14px; }
+.dialog-btns button { flex: 1; padding: 12px; border: 3px solid #2b1b10; border-radius: 12px; font-size: 15px; font-weight: 900; cursor: pointer; box-shadow: 0 4px 0 #2b1b10; }
+.ok { background: #a05fe5; color: white; }
+.cancel { background: white; color: #2b1b10; }
+.err { color: #e53935; font-size: 13px; font-weight: 900; min-height: 18px; margin-top: 6px; }
+
+.bottom-nav {
+position: fixed; bottom: 14px; left: 50%; transform: translateX(-50%);
+width: calc(100% - 28px); max-width: 390px; height: 70px; background: #fffaf0;
+border: 4px solid #2b1b10; border-radius: 24px; box-shadow: 0 6px 0 #2b1b10;
+display: grid; grid-template-columns: repeat(5, 1fr); overflow: hidden; z-index: 10;
+}
+.nav-item { border: none; background: transparent; font-size: 12px; font-weight: 900; color: #2b1b10; cursor: pointer; }
+.nav-item.active { background: #ffdf9d; }
+</style>
+</head>
+<body>
+<div class="app">
+<div class="header">
+<div class="header-title">🎯 ミッション</div>
+<button class="back" onclick="location.href='index.html'">← ホーム</button>
+</div>
+<div class="content">
+<div class="group-title">今日の本部ミッション</div>
+<div id="hqList"></div>
+
+<div class="group-title parent">保護者ミッション</div>
+<div id="parentList"></div>
+</div>
+
+<div class="bottom-nav">
+<button class="nav-item" onclick="location.href='index.html'">ホーム</button>
+<button class="nav-item" onclick="alert('QR読み込みは現在開発中です')">QR</button>
+<button class="nav-item" onclick="location.href='ranking.html'">ランキング</button>
+<button class="nav-item active">ミッション</button>
+<button class="nav-item" onclick="location.href='inventory.html'">持ち物</button>
+</div>
+</div>
+
+<div class="overlay" id="overlay">
+<div class="dialog">
+<h3>保護者の承認</h3>
+<p>保護者の暗証番号を入力してください<br>（おうちの人にきいてね）</p>
+<input class="pin-input" id="pin" type="password" inputmode="numeric" maxlength="4" placeholder="••••" />
+<div class="err" id="err"></div>
+<div class="dialog-btns">
+<button class="cancel" onclick="closeDialog()">やめる</button>
+<button class="ok" onclick="confirmPin()">承認する</button>
+</div>
+</div>
+</div>
+
+<script>
+// 本部ミッション（本来は本部管理画面で設定。ここでは仮データ）
+const HQ_MISSIONS = [
+{ id:"hq1", name:"今日の体操ミッション", items:"片足立ち30秒 ・ 前屈10秒 ・ ジャンプ10回", reward:"小さなパワーの種 +1", seed:"power" },
+];
+// 保護者ミッション（本来は保護者設定画面で設定。ここでは仮データ）
+const PARENT_MISSIONS = [
+{ id:"p1", name:"宿題をする",     reward:"小さな万能の種 +1", seed:"allround" },
+{ id:"p2", name:"お手伝いをする", reward:"小さな万能の種 +1", seed:"allround" },
+{ id:"p3", name:"靴をそろえる",   reward:"小さな万能の種 +1", seed:"allround" },
+];
+
+const PARENT_PIN = localStorage.getItem("sm_parentPin") || "1234"; // 仮の暗証番号
+
+const today = new Date().toISOString().slice(0,10);
+function doneKey(id){ return "sm_mission_" + id + "_" + today; }
+function isDone(id){ return localStorage.getItem(doneKey(id)) === "1"; }
+function markDone(id){ localStorage.setItem(doneKey(id), "1"); }
+
+function giveSeed(seed){
+const counts = JSON.parse(localStorage.getItem("sm_seeds") || "null") || { power:3, stamina:3, speed:3, technique:3, allround:2, rainbow:1 };
+counts[seed] = (counts[seed]||0) + 1;
+localStorage.setItem("sm_seeds", JSON.stringify(counts));
+}
+
+function renderMission(m, isParent) {
+const done = isDone(m.id);
+const div = document.createElement("div");
+div.className = "mission";
+div.innerHTML = `
+<div class="m-name">${m.name}</div>
+${m.items ? `<div class="m-items">${m.items}</div>` : "<div style='height:6px'></div>"}
+<div class="reward">🎁 ${m.reward}</div>
+<button class="do-btn ${isParent?"parent":""} ${done?"done":""}">${done ? "本日達成済み" : (isParent ? "承認してもらう" : "達成する")}</button>
+`;
+const btn = div.querySelector(".do-btn");
+if (!done) {
+btn.addEventListener("click", () => {
+if (isParent) openDialog(m);
+else complete(m);
+});
+}
+return div;
+}
+
+function complete(m) {
+markDone(m.id);
+giveSeed(m.seed);
+render();
+alert("ミッション達成！『" + m.reward + "』をゲット！持ち物を見てみよう。");
+}
+
+let pendingParent = null;
+const overlay = document.getElementById("overlay");
+function openDialog(m) {
+pendingParent = m;
+document.getElementById("pin").value = "";
+document.getElementById("err").textContent = "";
+overlay.classList.add("show");
+document.getElementById("pin").focus();
+}
+function closeDialog() { overlay.classList.remove("show"); pendingParent = null; }
+function confirmPin() {
+const v = document.getElementById("pin").value;
+if (v === PARENT_PIN) {
+const m = pendingParent;
+closeDialog();
+complete(m);
+} else {
+document.getElementById("err").textContent = "暗証番号がちがいます";
+}
+}
+
+function render() {
+const hq = document.getElementById("hqList");
+const pl = document.getElementById("parentList");
+hq.innerHTML = ""; pl.innerHTML = "";
+HQ_MISSIONS.forEach(m => hq.appendChild(renderMission(m, false)));
+PARENT_MISSIONS.forEach(m => pl.appendChild(renderMission(m, true)));
+}
+render();
+</script>
+</body>
+</html>

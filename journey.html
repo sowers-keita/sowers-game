@@ -208,7 +208,8 @@ notice.textContent = egg.dataset.egg + " を選んだ！新しい冒険スター
 actionBtn.style.display="block";
 actionBtn.className="action green";
 actionBtn.textContent="ホームへ戻る";
-step=5;
+// ホームへ戻るボタンを確実に機能させる（直接遷移）
+actionBtn.onclick = () => { location.href = "index.html"; };
 });
 });
 }else if(step===5){
