@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>モンスターランキング</title>
+<style>
+* { box-sizing: border-box; }
+body {
+margin: 0; min-height: 100vh; font-family: system-ui, sans-serif;
+background: radial-gradient(circle at top, #fff4c7 0%, #ffd88a 45%, #ff9f5a 100%);
+display: flex; justify-content: center; align-items: flex-start; padding: 14px;
+}
+.app {
+width: 100%; max-width: 390px; min-height: 92vh; background: #fffaf0;
+border: 5px solid #2b1b10; border-radius: 30px; box-shadow: 0 9px 0 #2b1b10;
+overflow: hidden; display: flex; flex-direction: column;
+}
+.header {
+background: #ffb400; color: #2b1b10; border-bottom: 5px solid #2b1b10; padding: 14px;
+display: flex; justify-content: space-between; align-items: center; font-weight: 900;
+}
+.header-title { font-size: 20px; }
+.back {
+background: white; color: #2b1b10; border: 3px solid #2b1b10; border-radius: 999px;
+padding: 6px 12px; font-size: 13px; font-weight: 900; cursor: pointer;
+}
+.content { flex: 1; padding: 14px; overflow-y: auto; padding-bottom: 92px; }
+
+.myrank {
+background: #ff7a00; color: white; border: 4px solid #2b1b10; border-radius: 22px;
+padding: 14px; box-shadow: 0 5px 0 #2b1b10; text-align: center; margin-bottom: 14px;
+}
+.myrank .label { font-size: 14px; font-weight: 800; }
+.myrank .num { font-size: 44px; font-weight: 900; line-height: 1.1; }
+.myrank .num small { font-size: 20px; }
+.myrank .power { font-size: 16px; font-weight: 900; margin-top: 2px; }
+
+.section-title { font-size: 16px; font-weight: 900; color: #2b1b10; margin: 4px 0 10px; }
+
+.row {
+display: flex; align-items: center; gap: 10px; background: white;
+border: 4px solid #2b1b10; border-radius: 16px; padding: 8px 10px; margin-bottom: 8px;
+box-shadow: 0 4px 0 #2b1b10;
+}
+.row.me { background: #ff7a00; color: white; }
+.row.top1 { background: #fff3c4; }
+.row.top2 { background: #f0f0f0; }
+.row.top3 { background: #ffe6cc; }
+
+.rank-no { font-size: 18px; font-weight: 900; width: 42px; text-align: center; flex-shrink: 0; }
+.icon {
+width: 34px; height: 34px; border-radius: 50%; border: 3px solid #2b1b10; flex-shrink: 0;
+position: relative;
+}
+.icon::before, .icon::after {
+content: ""; position: absolute; top: 11px; width: 4px; height: 4px;
+background: #2b1b10; border-radius: 50%;
+}
+.icon::before { left: 9px; }
+.icon::after { right: 9px; }
+.info { flex: 1; min-width: 0; text-align: left; }
+.mon-name { font-size: 15px; font-weight: 900; }
+.sub { font-size: 11px; font-weight: 700; opacity: 0.85; }
+.power-val { font-size: 14px; font-weight: 900; flex-shrink: 0; text-align: right; }
+
+.bottom-nav {
+position: fixed; bottom: 14px; left: 50%; transform: translateX(-50%);
+width: calc(100% - 28px); max-width: 390px; height: 70px; background: #fffaf0;
+border: 4px solid #2b1b10; border-radius: 24px; box-shadow: 0 6px 0 #2b1b10;
+display: grid; grid-template-columns: repeat(5, 1fr); overflow: hidden; z-index: 10;
+}
+.nav-item { border: none; background: transparent; font-size: 12px; font-weight: 900; color: #2b1b10; cursor: pointer; }
+.nav-item.active { background: #ffdf9d; }
+</style>
+</head>
+<body>
+<div class="app">
+<div class="header">
+<div class="header-title">🏆 モンスターランキング</div>
+<button class="back" onclick="location.href='index.html'">← ホーム</button>
+</div>
+<div class="content">
+<div class="myrank">
+<div class="label">あなたの順位</div>
+<div class="num" id="myRankNum">18<small>位</small></div>
+<div class="power" id="myPower">モンキー ・ 戦闘力 135</div>
+</div>
+
+<div class="section-title">TOP 30</div>
+<div id="list"></div>
+</div>
+
+<div class="bottom-nav">
+<button class="nav-item" onclick="location.href='index.html'">ホーム</button>
+<button class="nav-item" onclick="alert('QR読み込みは現在開発中です')">QR</button>
+<button class="nav-item active">ランキング</button>
+<button class="nav-item" onclick="alert('ミッションは現在開発中です')">ミッション</button>
+<button class="nav-item" onclick="location.href='inventory.html'">持ち物</button>
+</div>
+</div>
+
+<script>
+const SELF = { monster:"モンキー", classroom:"Sowers Club", child:"木原なな", power:135 };
+
+// 自分の戦闘力（バトル後の保存値があれば反映）
+const savedPower = parseInt(localStorage.getItem("sm_battlePower") || "", 10);
+if (!isNaN(savedPower)) SELF.power = savedPower;
+
+const others = [
+{ monster:"覚醒ハウンド",     classroom:"徳島体操",   child:"たろう",   power:285 },
+{ monster:"覚醒ピヨン",       classroom:"北島教室",   child:"みお",     power:272 },
+{ monster:"モンガード",       classroom:"阿南教室",   child:"そうた",   power:268 },
+{ monster:"バードン",         classroom:"石井教室",   child:"けんと",   power:255 },
+{ monster:"ワンダー",         classroom:"鳴門教室",   child:"ゆい",     power:248 },
+{ monster:"シャドウハウンド", classroom:"徳島体操",   child:"りく",     power:240 },
+{ monster:"ガーディアン",     classroom:"北島教室",   child:"あおい",   power:232 },
+{ monster:"ピヨン",           classroom:"阿南教室",   child:"はると",   power:225 },
+{ monster:"モンキー",         classroom:"小松島教室", child:"ひなた",   power:217 },
+{ monster:"ワンダー",         classroom:"石井教室",   child:"みなと",   power:210 },
+{ monster:"バードン",         classroom:"鳴門教室",   child:"さくら",   power:202 },
+{ monster:"ガーディアン",     classroom:"徳島体操",   child:"ゆうと",   power:195 },
+{ monster:"ピヨン",           classroom:"北島教室",   child:"ことね",   power:188 },
+{ monster:"シャドウハウンド", classroom:"阿南教室",   child:"そら",     power:178 },
+{ monster:"ワンダー",         classroom:"小松島教室", child:"れん",     power:168 },
+{ monster:"モンキー",         classroom:"石井教室",   child:"ゆな",     power:158 },
+{ monster:"ピヨン",           classroom:"鳴門教室",   child:"かいと",   power:147 },
+{ monster:"ワンダー",         classroom:"北島教室",   child:"みう",     power:128 },
+{ monster:"バードン",         classroom:"阿南教室",   child:"だいき",   power:120 },
+{ monster:"モンキー",         classroom:"小松島教室", child:"あかり",   power:112 },
+{ monster:"ピヨン",           classroom:"石井教室",   child:"はるき",   power:105 },
+{ monster:"ワンダー",         classroom:"鳴門教室",   child:"つむぎ",   power:98 },
+{ monster:"モンキー",         classroom:"徳島体操",   child:"りつ",     power:90 },
+{ monster:"ピヨン",           classroom:"北島教室",   child:"ひまり",   power:82 },
+{ monster:"ワンダー",         classroom:"阿南教室",   child:"ゆうま",   power:75 },
+{ monster:"モンキー",         classroom:"小松島教室", child:"いろは",   power:68 },
+{ monster:"ピヨン",           classroom:"石井教室",   child:"そうま",   power:60 },
+{ monster:"ワンダー",         classroom:"鳴門教室",   child:"みつき",   power:52 },
+{ monster:"モンキー",         classroom:"徳島体操",   child:"のあ",     power:45 },
+];
+
+const colors = ["#e94b35","#2f8ee5","#5fbd4a","#a05fe5","#ffb400","#ff7a00","#ff6fb1"];
+function colorFor(name){ let s=0; for(const c of name) s+=c.charCodeAt(0); return colors[s%colors.length]; }
+
+// 自分を含めて戦闘力で並べ替え
+const all = others.concat([{ ...SELF, isMe:true }]);
+all.sort((a,b)=> b.power - a.power);
+const top30 = all.slice(0,30);
+
+const myIndex = all.findIndex(x=>x.isMe);
+const myRank = myIndex + 1;
+document.getElementById("myRankNum").innerHTML = myRank + '<small>位</small>';
+document.getElementById("myPower").textContent = SELF.monster + " ・ 戦闘力 " + SELF.power;
+
+const medals = ["🥇","🥈","🥉"];
+const list = document.getElementById("list");
+top30.forEach((e, i) => {
+const rank = i + 1;
+const div = document.createElement("div");
+let cls = "row";
+if (e.isMe) cls += " me";
+else if (rank===1) cls += " top1";
+else if (rank===2) cls += " top2";
+else if (rank===3) cls += " top3";
+div.className = cls;
+const rankLabel = rank<=3 ? medals[rank-1] : rank+"位";
+div.innerHTML = `
+<div class="rank-no">${rankLabel}</div>
+<div class="icon" style="background:${colorFor(e.monster)}"></div>
+<div class="info">
+<div class="mon-name">${e.monster}${e.isMe?"（あなた）":""}</div>
+<div class="sub">${e.classroom} ・ ${e.child}</div>
+</div>
+<div class="power-val">戦闘力<br>${e.power}</div>
+`;
+list.appendChild(div);
+});
+</script>
+</body>
+</html>
